@@ -1,0 +1,174 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="card">
+    <div class="card-header">
+        Venta 
+    </div>
+    <div class="card-body">
+
+        <div class="row">
+            <div class="col-sm-4">
+
+                    <div class="mb-2">
+                        <label>Numero de Documento</label>
+                        <input type="text" class="form-control form-control-sm" id="txtnumerodocumento">
+                    </div>
+            </div>
+            <div class="col-sm-4">
+
+                <div class="mb-2">
+                    <label>Razon Social</label>
+                    <input type="text" class="form-control form-control-sm" id="txtrazonsocial">
+                </div>
+
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="row align-items-end">
+
+            <div class="col-sm-3">
+                <div class="mb-2">
+                    <label>Producto</label>
+                    <input type="text" class="form-control form-control-sm" id="txtproducto">
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                <div class="mb-2">
+                    <label>Precio</label>
+                    <input type="text" class="form-control form-control-sm" id="txtprecio">
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                <div class="mb-2">
+                    <label>Cantidad</label>
+                    <input type="text" class="form-control form-control-sm" id="txtcantidad">
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                <button class="btn btn-success mb-2 btn-sm" id="btnAgregar">Agregar</button>
+                <button class="btn btn-primary mb-2 btn-sm" id="btnTerminar">Terminar</button>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+
+                <table class="table table-bordered table-sm" id="tbProducto">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">Producto</th>
+                            <th scope="col">Precio</th>
+                            <th scope="col">Cantidad</th>
+                            <th scope="col">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                       
+                    </tbody>
+                </table>
+
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts{ 
+
+  <script>
+
+      //Boton para agregar registros en el frontend
+      $("#btnAgregar").on("click", function () {
+
+          let total = parseFloat($("#txtprecio").val()) * parseFloat($("#txtcantidad").val());
+
+          //Agregar a la tabla los productos
+          $("#tbProducto tbody").append(
+              $("<tr>").append(
+                  $("<td>").text($("#txtproducto").val()),
+                  $("<td>").text($("#txtprecio").val()),
+                  $("<td>").text($("#txtcantidad").val()),
+                  $("<td>").text(total),
+              )
+          )
+      })
+
+      //Este onclick es para enviarle informacion al controlador
+      $("#btnTerminar").on("click", function () {
+
+          let detalle_venta = [];
+          let total = 0;
+
+          //Recoger cada una de las filas rellanando el array detalle_venta con cada uno de los objetos
+          $("#tbProducto > tbody > tr").each(function (index, tr) {
+
+        
+          //public string Producto { get; set; }
+          //public decimal Precio { get; set; }
+          //public int Cantidad { get; set; }
+          //public decimal Total { get; set; }
+        
+              detalle_venta.push(
+                  {
+                      Producto: $(tr).find("td:eq(0)").text(),
+                      Precio: parseFloat($(tr).find("td:eq(1)").text()),
+                      Cantidad: parseInt($(tr).find("td:eq(2)").text()),
+                      Total: parseFloat($(tr).find("td:eq(3)").text()),
+                  }
+              )
+
+              total = total + parseFloat($(tr).find("td:eq(3)").text());
+
+          })
+
+          //Todo de venta
+          // public string NumeroDocumento { get; set; }
+          //public string RazonSocial { get; set; }
+          //public decimal Total { get; set; }
+          //Propiedad Extra
+          //public List < DetalleVenta > LstDetalleVenta { get; set; }
+
+          let venta = {
+              NumeroDocumento: $("#txtnumerodocumento").val(),
+              RazonSocial: $("#txtrazonsocial").val(),
+              Total: total,
+              LstDetalleVenta: detalle_venta,
+          }
+
+          console.log(venta);   
+
+          jQuery.ajax({
+              url: "@Url.Action("GuardarVenta", "Home")",
+              type: "POST",
+              data: JSON.stringify(venta),
+              dataType: "json",
+              contentType: "application/json; charset=utf-8",
+              success: function(data) {
+                  console.log(data);
+
+                  if (data.respuesta) {
+                      alert("Venta Registrada");
+                  }
+
+                  else {
+                      alert("FALLO!, hay un error en tu codigo");
+                  }
+
+              }
+
+          })
+
+      })
+
+  </script>
+  
+}
